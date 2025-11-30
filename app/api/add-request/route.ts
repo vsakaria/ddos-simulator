@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getRedisClient } from '@/lib/redis'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST() {
   try {
     const redis = await getRedisClient()

@@ -13,7 +13,9 @@ export default function MonitorPage() {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const response = await fetch('/api/status')
+        const response = await fetch('/api/status', {
+          cache: 'no-store' // Prevent caching
+        })
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}))
           setError(`API Error: ${response.status} - ${errorData.details || response.statusText}`)
@@ -25,9 +27,10 @@ export default function MonitorPage() {
           setError(data.details || data.error)
         } else {
           setError(null)
-          setCount(data.count || 0)
+          const newCount = data.count || 0
+          setCount(newCount)
           setHistory((prev) => {
-            const newHistory = [...prev, data.count || 0]
+            const newHistory = [...prev, newCount]
             // Keep only last 30 data points for graph
             return newHistory.slice(-30)
           })
