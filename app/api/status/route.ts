@@ -1,9 +1,12 @@
-import { kv } from '@vercel/kv'
 import { NextResponse } from 'next/server'
+import { getRedisClient } from '@/lib/redis'
 
 export async function GET() {
   try {
-    const count = await kv.get<number>('requestCount') || 0
+    const redis = await getRedisClient()
+    
+    const countStr = await redis.get('requestCount')
+    const count = countStr ? parseInt(countStr, 10) : 0
     
     return NextResponse.json({ count })
   } catch (error) {
