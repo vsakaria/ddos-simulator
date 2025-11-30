@@ -8,8 +8,13 @@ export async function GET() {
     return NextResponse.json({ count })
   } catch (error) {
     console.error('Error fetching status:', error)
+    // Return error details for debugging
     return NextResponse.json(
-      { count: 0, error: 'Failed to fetch status' },
+      { 
+        count: 0, 
+        error: 'Failed to fetch status',
+        details: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     )
   }

@@ -8,19 +8,33 @@ export default function MonitorPage() {
   const [count, setCount] = useState(0)
   const [history, setHistory] = useState<number[]>([])
   const [isResetting, setIsResetting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchStatus = async () => {
       try {
         const response = await fetch('/api/status')
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          setError(`API Error: ${response.status} - ${errorData.details || response.statusText}`)
+          console.error('Status API error:', response.status, errorData)
+          return
+        }
         const data = await response.json()
-        setCount(data.count || 0)
-        setHistory((prev) => {
-          const newHistory = [...prev, data.count || 0]
-          // Keep only last 30 data points for graph
-          return newHistory.slice(-30)
-        })
+        if (data.error) {
+          setError(data.details || data.error)
+        } else {
+          setError(null)
+          setCount(data.count || 0)
+          setHistory((prev) => {
+            const newHistory = [...prev, data.count || 0]
+            // Keep only last 30 data points for graph
+            return newHistory.slice(-30)
+          })
+        }
       } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+        setError(`Network error: ${errorMsg}`)
         console.error('Error fetching status:', error)
       }
     }
@@ -67,6 +81,13 @@ export default function MonitorPage() {
         <h1 className="text-4xl font-bold text-gray-800 text-center">
           Server Monitor
         </h1>
+
+        {error && (
+          <div className="bg-yellow-500 text-white text-center py-4 px-8 rounded-lg shadow-lg">
+            <p className="font-semibold">⚠️ Error: {error}</p>
+            <p className="text-sm mt-2">Check browser console and Vercel logs for details</p>
+          </div>
+        )}
 
         {isOverloaded && (
           <div className="bg-red-600 text-white text-center py-6 px-8 rounded-lg shadow-xl animate-pulse">

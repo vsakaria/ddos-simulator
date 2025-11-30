@@ -12,11 +12,16 @@ export async function POST() {
     // Store back to KV
     await kv.set('requestCount', newCount)
     
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, count: newCount })
   } catch (error) {
     console.error('Error incrementing request count:', error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
     return NextResponse.json(
-      { success: false, error: 'Failed to increment count' },
+      { 
+        success: false, 
+        error: 'Failed to increment count',
+        details: errorMessage
+      },
       { status: 500 }
     )
   }
